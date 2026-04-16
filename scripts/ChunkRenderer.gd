@@ -39,6 +39,8 @@ func render_visible_chunks(world: Dictionary, center: Vector2i, world_width_chun
 			chunk["dirty"] = false
 			# Explicit print to Godot console for debugging initial render
 			print("Rendered new chunk at: ", key)
+			# Explicit print to Godot console for debugging initial render
+			print("Rendered new chunk at: ", key)
 
 
 func draw_chunk(chunk_coord: Vector2i, center: Vector2i, world_width_chunks: int, tiles: Array) -> void:
