@@ -188,46 +188,41 @@ func clamp_chunk_y(cy: int) -> int:
 # ---------------------------------------------------------
 # LOAD CHUNKS INSIDE ACTIVE RADIUS
 # ---------------------------------------------------------
+
 func update_active_chunks(center: Vector2i) -> void:
-	# #region agent log
-	_debug_log(
-		"H2",
-		"WorldManager.gd:update_active_chunks",
-		"Active chunk update window",
-		{
-			"center": center,
-			"active_radius": ACTIVE_RADIUS
-		}
-	)
-	# #endregion
-	# Force a wider check range if we are near the seam
+	var world_width = world_width_chunks()
+	# Load a square of chunks around the player, wrapping X coordinates
 	for dx in range(-ACTIVE_RADIUS, ACTIVE_RADIUS + 1):
 		for dy in range(-ACTIVE_RADIUS, ACTIVE_RADIUS + 1):
-			var wrapped_cx: int = wrap_chunk_x(center.x + dx)
-			var clamped_cy: int = clamp_chunk_y(center.y + dy)
-			var key: Vector2i = Vector2i(wrapped_cx, clamped_cy)
+			var raw_x = center.x + dx
+			var wrapped_cx = posmod(raw_x, world_width)
+			var clamped_cy = clamp(center.y + dy, 0, world_height_chunks() - 1)
+			var key = Vector2i(wrapped_cx, clamped_cy)
 
 			if not world.has(key):
-				var tiles: Array = generator.generate_chunk(wrapped_cx, clamped_cy)
-
+				var tiles = generator.generate_chunk(wrapped_cx, clamped_cy)
 				world[key] = {
 					"tiles": tiles,
 					"dirty": true,
-					"sim_state": {
-						"fire_intensity": 0.0,
-						"biomass": 1.0,
-						"soil_moisture": 0.5,
-						"temperature_offset": 0.0,
-						"last_update_time": world_time_days
-					}
+					"sim_state": {"last_update_time": world_time_days}
 				}
 
-				print("Loaded chunk: ", key)
+func unload_far_chunks(center: Vector2i) -> void:
+	var max_dist = ACTIVE_RADIUS + UNLOAD_BUFFER
+	var world_width = world_width_chunks()
+	var to_unload = []
 
-	# Compare seam continuity once both seam-side chunks are present.
-	_log_seam_mismatch(center)
+	for key in world.keys():
+		# Calculate shortest horizontal distance (wrapping aware)
+		var dx_linear = abs(key.x - center.x)
+		var dx = min(dx_linear, world_width - dx_linear)
+		var dy = abs(key.y - center.y)
 
+		if dx > max_dist or dy > max_dist:
+			to_unload.append(key)
 
+	for key in to_unload:
+		world.erase(key)
 func _log_seam_mismatch(center: Vector2i) -> void:
 	var world_chunks_x: int = world_width_chunks()
 	var cy: int = clamp_chunk_y(center.y)
