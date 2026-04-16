@@ -201,10 +201,10 @@ func update_active_chunks(center: Vector2i) -> void:
 	)
 	# #endregion
 	# Force a wider check range if we are near the seam
-	for cx: int in range(center.x - ACTIVE_RADIUS, center.x + ACTIVE_RADIUS + 1):
-		for cy: int in range(center.y - ACTIVE_RADIUS, center.y + ACTIVE_RADIUS + 1):
-			var wrapped_cx: int = wrap_chunk_x(cx)
-			var clamped_cy: int = clamp_chunk_y(cy)
+		for dx in range(-ACTIVE_RADIUS, ACTIVE_RADIUS + 1):
+		for dy in range(-ACTIVE_RADIUS, ACTIVE_RADIUS + 1):
+			var wrapped_cx: int = wrap_chunk_x(center.x + dx)
+			var clamped_cy: int = clamp_chunk_y(center.y + dy)
 			var key: Vector2i = Vector2i(wrapped_cx, clamped_cy)
 
 			if not world.has(key):
