@@ -200,7 +200,7 @@ func unload_far_chunks(center: Vector2i) -> void:
 	var to_unload = []
 
 	for key in world.keys():
-		# Calculate horizontal distance considering world wrap (shortest path)
+		# Calculate horizontal distance considering world wrap
 		var dx_linear = abs(key.x - center.x)
 		var dx = min(dx_linear, world_width - dx_linear)
 		var dy = abs(key.y - center.y)
