@@ -127,9 +127,11 @@ func generate_chunk(cx: int, cy: int) -> Array:
 				# #endregion
 
 			# --- Raw noise fields ---
-			var alt: float = noise_alt.get_noise_2d(wx, wy)
-			var moist_raw: float = noise_moist.get_noise_2d(wx, wy)
-			var temp_raw: float = noise_temp.get_noise_2d(wx, wy)
+			var angle = (float(wx) / _world_width_tiles()) * TAU
+			var radius = _world_width_tiles() / TAU
+			var alt = noise_alt.get_noise_3d(cos(angle) * radius, wy, sin(angle) * radius)
+			var moist_raw = noise_moist.get_noise_3d(cos(angle) * radius, wy, sin(angle) * radius)
+			var temp_raw = noise_temp.get_noise_3d(cos(angle) * radius, wy, sin(angle) * radius)
 
 			# --- Latitude in -1..1 (south to north) ---
 			var lat_height: float = float(max(1, _world_height_tiles()))
