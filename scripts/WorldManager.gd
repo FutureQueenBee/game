@@ -180,7 +180,7 @@ func clamp_chunk_y(cy: int) -> int:
 
 func update_active_chunks(center: Vector2i) -> void:
 	var world_width = world_width_chunks()
-	for dx in range(-(ACTIVE_RADIUS + 2), ACTIVE_RADIUS + 3):
+	for dx in range(-(ACTIVE_RADIUS + 3), ACTIVE_RADIUS + 4):
 		for dy in range(-(ACTIVE_RADIUS + 1), ACTIVE_RADIUS + 2):
 			var wrapped_cx = posmod(center.x + dx, world_width)
 			var clamped_cy = clamp(center.y + dy, 0, world_height_chunks() - 1)
