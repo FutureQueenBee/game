@@ -144,29 +144,14 @@ func _unhandled_input(event: InputEvent) -> void:
 # WORLD / CHUNK COORDINATES
 # ---------------------------------------------------------
 func world_to_chunk(pos: Vector2) -> Vector2i:
-	var chunk_world_size: int = CHUNK_SIZE * TILE_SIZE
 	var raw_chunk := Vector2i(
-		floor(pos.x / chunk_world_size),
-		floor(pos.y / chunk_world_size)
+		floor(pos.x / (CHUNK_SIZE * TILE_SIZE)),
+		floor(pos.y / (CHUNK_SIZE * TILE_SIZE))
 	)
-	var chunk := Vector2i(
-		wrap_chunk_x(raw_chunk.x),
-		clamp_chunk_y(raw_chunk.y)
+	return Vector2i(
+		posmod(raw_chunk.x, world_width_chunks()),
+		clamp(raw_chunk.y, 0, world_height_chunks() - 1)
 	)
-	# #region agent log
-	_debug_log(
-		"H1",
-		"WorldManager.gd:world_to_chunk",
-		"Computed chunk with wrap/bounds",
-		{
-			"pos": pos,
-			"chunk_world_size": chunk_world_size,
-			"raw_chunk": raw_chunk,
-			"chunk": chunk
-		}
-	)
-	# #endregion
-	return chunk
 
 
 func world_width_chunks() -> int:
