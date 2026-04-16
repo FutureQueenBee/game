@@ -45,12 +45,16 @@ func render_visible_chunks(world: Dictionary, center: Vector2i, world_width_chun
 
 func draw_chunk(chunk_coord: Vector2i, center: Vector2i, world_width_chunks: int, tiles: Array) -> void:
 	var chunk_size: int = _chunk_size()
+	
+	# 1. Get raw distance in chunks
 	var dx = chunk_coord.x - center.x
 	
-	# Ensure visual offset is within [-width/2, width/2]
+	# 2. Wrap dx to the range [-width/2, width/2]
+	# This ensures the chunk is drawn on the side of the player that is geographically closer
 	if world_width_chunks > 0:
 		dx = posmod(dx + world_width_chunks / 2, world_width_chunks) - (world_width_chunks / 2)
 	
+	# 3. Calculate final TileMap grid coordinates
 	var draw_x = center.x + dx
 	var base_x: int = draw_x * chunk_size
 	var base_y: int = chunk_coord.y * chunk_size
@@ -58,5 +62,6 @@ func draw_chunk(chunk_coord: Vector2i, center: Vector2i, world_width_chunks: int
 	for x: int in range(chunk_size):
 		for y: int in range(chunk_size):
 			var t = tiles[x][y]
-			set_cell(0, Vector2i(base_x + x, base_y + y), 0, Vector2i(t.tile_id, 0))
+			# Layer 0, Grid Pos, Source ID 0, Atlas Coords
+			set_cell(0, Vector2i(base_x + x, base_y + y), 0, Vector2i(t.tile_id, 0)), 0, Vector2i(t.tile_id, 0))
 
