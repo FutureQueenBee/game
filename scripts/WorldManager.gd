@@ -195,11 +195,12 @@ func update_active_chunks(center: Vector2i) -> void:
 				}
 
 func unload_far_chunks(center: Vector2i) -> void:
-	var max_dist = ACTIVE_RADIUS + UNLOAD_BUFFER + 2
+	var max_dist = ACTIVE_RADIUS + UNLOAD_BUFFER
 	var world_width = world_width_chunks()
 	var to_unload = []
 
 	for key in world.keys():
+		# Calculate horizontal distance considering world wrap
 		var dx_linear = abs(key.x - center.x)
 		var dx = min(dx_linear, world_width - dx_linear)
 		var dy = abs(key.y - center.y)

@@ -45,9 +45,9 @@ func render_visible_chunks(world: Dictionary, center: Vector2i, world_width_chun
 
 func draw_chunk(chunk_coord: Vector2i, center: Vector2i, world_width_chunks: int, tiles: Array) -> void:
 	var chunk_size: int = _chunk_size()
-	
-	# Calculate the wrapped visual offset relative to the player
 	var dx = chunk_coord.x - center.x
+	
+	# Ensure visual offset is within [-width/2, width/2]
 	if world_width_chunks > 0:
 		dx = posmod(dx + world_width_chunks / 2, world_width_chunks) - (world_width_chunks / 2)
 	
@@ -58,6 +58,5 @@ func draw_chunk(chunk_coord: Vector2i, center: Vector2i, world_width_chunks: int
 	for x: int in range(chunk_size):
 		for y: int in range(chunk_size):
 			var t = tiles[x][y]
-			# Layer 0, Coords, Source 0, Atlas Coords (ID:0)
-			set_cell(0, Vector2i(base_x + x, base_y + y), 0, Vector2i(t.tile_id, 0))
+			set_cell(0, Vector2i(base_x + x, base_y + y), 0, Vector2i(t.tile_id, 0)), 0, Vector2i(t.tile_id, 0))
 
