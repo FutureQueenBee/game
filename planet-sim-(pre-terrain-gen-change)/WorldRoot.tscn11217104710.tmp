@@ -1,0 +1,170 @@
+[gd_scene format=3 uid="uid://cgbep21nbp5lo"]
+
+[ext_resource type="Script" uid="uid://cpwjr5w2e8bii" path="res://scripts/ToggleWindowSize.gd" id="1_fnvix"]
+[ext_resource type="Script" uid="uid://cw15xpwa44dps" path="res://scripts/ChunkGenerator.gd" id="1_tq6mx"]
+[ext_resource type="TileSet" uid="uid://8vk003r16mwq" path="res://tileset.tres" id="2_fry66"]
+[ext_resource type="Script" uid="uid://bqho18qdqefqo" path="res://scripts/ChunkRenderer.gd" id="3_fe7vh"]
+[ext_resource type="Script" uid="uid://c1ad4rakyg6tw" path="res://scripts/WorldManager.gd" id="3_fry66"]
+[ext_resource type="Texture2D" uid="uid://bhebvnjeirhgg" path="res://sprites/Generic_Man_Idle.png" id="3_r83ca"]
+[ext_resource type="Texture2D" uid="uid://75sn2ccwj0ll" path="res://sprites/Generic_Man_Run.png" id="4_fe7vh"]
+[ext_resource type="Script" uid="uid://d3dx2vkox3cuu" path="res://scripts/Player.gd" id="5_fe7vh"]
+[ext_resource type="Script" uid="uid://nlor6a5cikw8" path="res://scripts/DebugOverlay.gd" id="8_vtdmk"]
+[ext_resource type="Script" uid="uid://dnlu4y2fqv8n8" path="res://scripts/DebugPanel.gd" id="10_anuy4"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fos0i"]
+atlas = ExtResource("3_r83ca")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3dxm6"]
+atlas = ExtResource("3_r83ca")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lgr22"]
+atlas = ExtResource("3_r83ca")
+region = Rect2(64, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_trn2v"]
+atlas = ExtResource("3_r83ca")
+region = Rect2(96, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_03owx"]
+atlas = ExtResource("3_r83ca")
+region = Rect2(128, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wkp8b"]
+atlas = ExtResource("3_r83ca")
+region = Rect2(160, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_20pc6"]
+atlas = ExtResource("4_fe7vh")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5vvyt"]
+atlas = ExtResource("4_fe7vh")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_c6i3y"]
+atlas = ExtResource("4_fe7vh")
+region = Rect2(64, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_c2ibq"]
+atlas = ExtResource("4_fe7vh")
+region = Rect2(96, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_j4qnp"]
+atlas = ExtResource("4_fe7vh")
+region = Rect2(128, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fpfj3"]
+atlas = ExtResource("4_fe7vh")
+region = Rect2(160, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_sc1dx"]
+atlas = ExtResource("4_fe7vh")
+region = Rect2(192, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kjvhd"]
+atlas = ExtResource("4_fe7vh")
+region = Rect2(224, 0, 32, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_5tuhn"]
+animations = [{
+"frames": [],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fos0i")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3dxm6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_lgr22")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_trn2v")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_03owx")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wkp8b")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_20pc6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5vvyt")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_c6i3y")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_c2ibq")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_j4qnp")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fpfj3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_sc1dx")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kjvhd")
+}],
+"loop": true,
+"name": &"walk",
+"speed": 5.0
+}]
+
+[node name="WorldRoot" type="Node2D" unique_id=477813117]
+script = ExtResource("1_fnvix")
+
+[node name="ChunkGenerator" type="Node" parent="." unique_id=1121501307]
+script = ExtResource("1_tq6mx")
+
+[node name="ChunkRenderer" type="TileMap" parent="." unique_id=326404540]
+tile_set = ExtResource("2_fry66")
+format = 2
+script = ExtResource("3_fe7vh")
+
+[node name="WorldManager" type="Node" parent="." unique_id=217275979]
+script = ExtResource("3_fry66")
+CHUNK_SIZE = null
+TILE_SIZE = null
+ACTIVE_RADIUS = null
+
+[node name="Player" type="CharacterBody2D" parent="." unique_id=2132095062]
+script = ExtResource("5_fe7vh")
+ZOOM_MAX = 5.0
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Player" unique_id=1403782720]
+sprite_frames = SubResource("SpriteFrames_5tuhn")
+animation = &"idle"
+frame_progress = 0.89353985
+
+[node name="Camera2D" type="Camera2D" parent="Player" unique_id=1962152778]
+limit_enabled = false
+position_smoothing_enabled = true
+
+[node name="DebugOverlay" type="Node2D" parent="." unique_id=66102631]
+script = ExtResource("8_vtdmk")
+
+[node name="DebugUI" type="CanvasLayer" parent="." unique_id=1672293202]
+
+[node name="DebugPanel" type="Control" parent="DebugUI" unique_id=1417919716]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("10_anuy4")
