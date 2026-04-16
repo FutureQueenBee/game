@@ -45,7 +45,10 @@ func draw_chunk(chunk_coord: Vector2i, center: Vector2i, world_width_chunks: int
 	var chunk_size: int = _chunk_size()
 	var wrapped_dx: int = chunk_coord.x - center.x
 	if world_width_chunks > 0:
-		wrapped_dx = posmod(wrapped_dx + int(world_width_chunks / 2), world_width_chunks) - int(world_width_chunks / 2)
+		# Ensure the chunk wraps to the closest visual representation of the player
+		# Use a stable wrap-around offset to keep chunks in place during teleportation
+		var half_width = world_width_chunks / 2.0
+		wrapped_dx = int(posmod(wrapped_dx + half_width, world_width_chunks) - half_width)
 	var draw_chunk_x: int = center.x + wrapped_dx
 	var base_x: int = draw_chunk_x * chunk_size
 	var base_y: int = chunk_coord.y * chunk_size

@@ -82,9 +82,12 @@ func _physics_process(delta: float) -> void:
 		var changed: bool = false
 		if global_position.x < 0.0 or global_position.x >= world_width_px:
 			var wrapped_x: float = fposmod(global_position.x, world_width_px)
-			if wrapped_x >= world_width_px:
-				wrapped_x = 0.0
+			if wrapped_x >= world_width_px or wrapped_x < 0.0:
+				wrapped_x = fmod(wrapped_x + world_width_px, world_width_px)
 			global_position.x = wrapped_x
+			# Snap camera to prevent interpolation jump across world
+			cam.global_position.x = wrapped_x
+			cam.reset_smoothing()
 			changed = true
 		var clamped_y: float = clamp(global_position.y, 0.0, world_height_px - 1.0)
 		if clamped_y != global_position.y:

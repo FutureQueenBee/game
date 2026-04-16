@@ -2,7 +2,7 @@ extends Node
 
 @export var CHUNK_SIZE: int = 32
 @export var TILE_SIZE: int = 16
-@export var ACTIVE_RADIUS: int = 3
+@export var ACTIVE_RADIUS: int = 5
 @export var UNLOAD_BUFFER: int = 1
 @export var WORLD_WIDTH_TILES: int = 2048
 @export var WORLD_HEIGHT_TILES: int = 1024
@@ -288,9 +288,10 @@ func unload_far_chunks(center: Vector2i) -> void:
 		if key == null:
 			continue
 
-		var dx_linear: int = abs(key.x - center.x)
-		var dx_wrap: int = world_chunks_x - dx_linear
-		var dx: int = min(dx_linear, dx_wrap)
+		var world_width: int = world_width_chunks()
+		var dx: int = abs(key.x - center.x)
+		if dx > world_width / 2:
+		    dx = world_width - dx
 		var dy: int = abs(key.y - center.y)
 
 		if dx > max_dist or dy > max_dist:
