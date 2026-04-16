@@ -180,7 +180,6 @@ func clamp_chunk_y(cy: int) -> int:
 
 func update_active_chunks(center: Vector2i) -> void:
 	var world_width = world_width_chunks()
-	# Load up to ACTIVE_RADIUS + 1 to ensure a buffer for the unloader
 	for dx in range(-(ACTIVE_RADIUS + 1), ACTIVE_RADIUS + 2):
 		for dy in range(-(ACTIVE_RADIUS + 1), ACTIVE_RADIUS + 2):
 			var wrapped_cx = posmod(center.x + dx, world_width)
@@ -196,12 +195,12 @@ func update_active_chunks(center: Vector2i) -> void:
 				}
 
 func unload_far_chunks(center: Vector2i) -> void:
-	# Unloader buffer must be strictly > loader range to prevent flicker
 	var max_dist = ACTIVE_RADIUS + UNLOAD_BUFFER
 	var world_width = world_width_chunks()
 	var to_unload = []
 
 	for key in world.keys():
+		# Shortest path horizontal distance (wrapping aware)
 		var dx_linear = abs(key.x - center.x)
 		var dx = min(dx_linear, world_width - dx_linear)
 		var dy = abs(key.y - center.y)
