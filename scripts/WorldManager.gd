@@ -191,11 +191,13 @@ func clamp_chunk_y(cy: int) -> int:
 
 
 
+
 func update_active_chunks(center: Vector2i) -> void:
 	var world_width = world_width_chunks()
-	# Increased range to ensure overlap with renderer
-	for dx in range(-(ACTIVE_RADIUS + 2), ACTIVE_RADIUS + 3):
-		for dy in range(-(ACTIVE_RADIUS + 1), ACTIVE_RADIUS + 2):
+	# We use a wider horizontal range (ACTIVE_RADIUS + 2) specifically for the X axis 
+	# to ensure chunks on the other side of the seam are ready before the camera sees them.
+	for dx in range(-(ACTIVE_RADIUS + 3), ACTIVE_RADIUS + 4):
+		for dy in range(-ACTIVE_RADIUS, ACTIVE_RADIUS + 1):
 			var wrapped_cx = posmod(center.x + dx, world_width)
 			var clamped_cy = clamp(center.y + dy, 0, world_height_chunks() - 1)
 			var key = Vector2i(wrapped_cx, clamped_cy)
