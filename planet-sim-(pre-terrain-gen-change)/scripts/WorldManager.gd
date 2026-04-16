@@ -328,3 +328,6 @@ func simulate_chunks(dt_days: float) -> void:
 		sim_state["last_update_time"] = world_time_days
 
 		# Later: use local_dt to update fire, biomass, moisture, etc.
+
+func test_git_sync() -> void:
+	print("Git Sync Successful: Connection is working!")
