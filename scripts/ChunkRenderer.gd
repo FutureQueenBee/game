@@ -31,14 +31,14 @@ func _chunk_size() -> int:
 
 func render_visible_chunks(world: Dictionary, center: Vector2i, world_width_chunks: int) -> void:
 	for key in world.keys():
-		var chunk: Dictionary = world[key]   # <-- FIXED
+		var chunk: Dictionary = world[key]
 
 		if chunk.get("dirty", false):
-			print("Drawing chunk: ", key)
-
 			var tiles: Array = chunk["tiles"]
 			draw_chunk(key, center, world_width_chunks, tiles)
 			chunk["dirty"] = false
+			# Explicit print to Godot console for debugging initial render
+			print("Rendered new chunk at: ", key)
 
 
 func draw_chunk(chunk_coord: Vector2i, center: Vector2i, world_width_chunks: int, tiles: Array) -> void:
