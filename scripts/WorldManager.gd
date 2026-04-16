@@ -290,9 +290,8 @@ func unload_far_chunks(center: Vector2i) -> void:
 			continue
 
 		var world_width: int = world_width_chunks()
-		var dx: int = abs(key.x - center.x)
-		if dx > world_width / 2:
-		    dx = world_width - dx
+		var dx_linear: int = abs(key.x - center.x)
+		var dx: int = min(dx_linear, world_width - dx_linear)
 		var dy: int = abs(key.y - center.y)
 
 		if dx > max_dist or dy > max_dist:
