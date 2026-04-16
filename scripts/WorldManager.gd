@@ -189,13 +189,12 @@ func clamp_chunk_y(cy: int) -> int:
 # LOAD CHUNKS INSIDE ACTIVE RADIUS
 # ---------------------------------------------------------
 
+
 func update_active_chunks(center: Vector2i) -> void:
 	var world_width = world_width_chunks()
-	# Load a square of chunks around the player, wrapping X coordinates
 	for dx in range(-ACTIVE_RADIUS, ACTIVE_RADIUS + 1):
 		for dy in range(-ACTIVE_RADIUS, ACTIVE_RADIUS + 1):
-			var raw_x = center.x + dx
-			var wrapped_cx = posmod(raw_x, world_width)
+			var wrapped_cx = posmod(center.x + dx, world_width)
 			var clamped_cy = clamp(center.y + dy, 0, world_height_chunks() - 1)
 			var key = Vector2i(wrapped_cx, clamped_cy)
 
@@ -213,7 +212,7 @@ func unload_far_chunks(center: Vector2i) -> void:
 	var to_unload = []
 
 	for key in world.keys():
-		# Calculate shortest horizontal distance (wrapping aware)
+		# Shortest path horizontal distance (wrapping aware)
 		var dx_linear = abs(key.x - center.x)
 		var dx = min(dx_linear, world_width - dx_linear)
 		var dy = abs(key.y - center.y)
@@ -223,46 +222,8 @@ func unload_far_chunks(center: Vector2i) -> void:
 
 	for key in to_unload:
 		world.erase(key)
-func _log_seam_mismatch(center: Vector2i) -> void:
-	var world_chunks_x: int = world_width_chunks()
-	var cy: int = clamp_chunk_y(center.y)
-	var left_key := Vector2i(0, cy)
-	var right_key := Vector2i(world_chunks_x - 1, cy)
-	if not world.has(left_key) or not world.has(right_key):
-		return
-	var left_chunk: Dictionary = world[left_key]
-	var right_chunk: Dictionary = world[right_key]
-	if not left_chunk.has("tiles") or not right_chunk.has("tiles"):
-		return
-	var left_tiles: Array = left_chunk["tiles"]
-	var right_tiles: Array = right_chunk["tiles"]
-	var seam_diff_sum: float = 0.0
-	for y in range(CHUNK_SIZE):
-		var left_tile: WorldTile = left_tiles[0][y]
-		var right_tile: WorldTile = right_tiles[CHUNK_SIZE - 1][y]
-		seam_diff_sum += abs(left_tile.altitude - right_tile.altitude)
-	# #region agent log
-	_debug_log(
-		"H11",
-		"WorldManager.gd:_log_seam_mismatch",
-		"Seam altitude mismatch summary",
-		{
-			"center_chunk": center,
-			"sample_row_chunk_y": cy,
-			"left_key": left_key,
-			"right_key": right_key,
-			"seam_alt_diff_avg": seam_diff_sum / float(CHUNK_SIZE)
-		}
-	)
-	# #endregion
 
 
-# ---------------------------------------------------------
-# UNLOAD CHUNKS OUTSIDE ACTIVE RADIUS + BUFFER
-# ---------------------------------------------------------
-# ---------------------------------------------------------
-# SIMULATION SCHEDULER (STUB)
-# ---------------------------------------------------------
 func simulate_chunks(dt_days: float) -> void:
 	# For now, just update last_update_time so the structure is correct.
 	for raw_key in world.keys():
