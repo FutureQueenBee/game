@@ -2,7 +2,7 @@ extends Node
 
 @export var CHUNK_SIZE: int = 32
 @export var TILE_SIZE: int = 16
-@export var ACTIVE_RADIUS: int = 4
+@export var ACTIVE_RADIUS: int = 10
 @export var UNLOAD_BUFFER: int = 1
 @export var WORLD_WIDTH_TILES: int = 2048
 @export var WORLD_HEIGHT_TILES: int = 1024
