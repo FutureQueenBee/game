@@ -2,8 +2,8 @@ extends Node
 
 @export var CHUNK_SIZE: int = 32
 @export var TILE_SIZE: int = 16
-@export var ACTIVE_RADIUS: int = 10
-@export var UNLOAD_BUFFER: int = 1
+@export var ACTIVE_RADIUS: int = 50
+@export var UNLOAD_BUFFER: int = 2
 @export var WORLD_WIDTH_TILES: int = 2048
 @export var WORLD_HEIGHT_TILES: int = 1024
 
@@ -180,8 +180,9 @@ func clamp_chunk_y(cy: int) -> int:
 
 func update_active_chunks(center: Vector2i) -> void:
 	var world_width = world_width_chunks()
-	for dx in range(-(ACTIVE_RADIUS + 2), ACTIVE_RADIUS + 3):
-		for dy in range(-ACTIVE_RADIUS, ACTIVE_RADIUS + 1):
+	# Load up to ACTIVE_RADIUS + 1 to ensure a buffer for the unloader
+	for dx in range(-(ACTIVE_RADIUS + 1), ACTIVE_RADIUS + 2):
+		for dy in range(-(ACTIVE_RADIUS + 1), ACTIVE_RADIUS + 2):
 			var wrapped_cx = posmod(center.x + dx, world_width)
 			var clamped_cy = clamp(center.y + dy, 0, world_height_chunks() - 1)
 			var key = Vector2i(wrapped_cx, clamped_cy)
@@ -195,12 +196,12 @@ func update_active_chunks(center: Vector2i) -> void:
 				}
 
 func unload_far_chunks(center: Vector2i) -> void:
+	# Unloader buffer must be strictly > loader range to prevent flicker
 	var max_dist = ACTIVE_RADIUS + UNLOAD_BUFFER
 	var world_width = world_width_chunks()
 	var to_unload = []
 
 	for key in world.keys():
-		# Calculate horizontal distance considering world wrap
 		var dx_linear = abs(key.x - center.x)
 		var dx = min(dx_linear, world_width - dx_linear)
 		var dy = abs(key.y - center.y)
