@@ -260,46 +260,6 @@ func _log_seam_mismatch(center: Vector2i) -> void:
 # ---------------------------------------------------------
 # UNLOAD CHUNKS OUTSIDE ACTIVE RADIUS + BUFFER
 # ---------------------------------------------------------
-func unload_far_chunks(center: Vector2i) -> void:
-	var max_dist: int = ACTIVE_RADIUS + UNLOAD_BUFFER
-	# #region agent log
-	_debug_log(
-		"H5",
-		"WorldManager.gd:unload_far_chunks",
-		"Unload pass start",
-		{
-			"center": center,
-			"max_dist": max_dist,
-			"loaded_chunk_count": world.size()
-		}
-	)
-	# #endregion
-
-	var to_unload: Array = []   # no typed Array[Vector2i]
-
-	var keys: Array = world.keys()
-	var world_chunks_x: int = world_width_chunks()
-	for raw_key in keys:
-		var key: Vector2i = raw_key as Vector2i
-		if key == null:
-			continue
-
-		var world_width: int = world_width_chunks()
-		var dx_linear: int = abs(key.x - center.x)
-		var dx: int = min(dx_linear, world_width - dx_linear)
-		var dy: int = abs(key.y - center.y)
-
-		if dx > max_dist or dy > max_dist:
-			to_unload.append(key)
-
-	for raw_key in to_unload:
-		var key: Vector2i = raw_key as Vector2i
-		if key == null:
-			continue
-		world.erase(key)
-		print("Unloaded chunk: ", key)
-
-
 # ---------------------------------------------------------
 # SIMULATION SCHEDULER (STUB)
 # ---------------------------------------------------------
