@@ -33,7 +33,7 @@ func render_visible_chunks(world: Dictionary, center: Vector2i, world_width_chun
 	for key in world.keys():
 		var chunk: Dictionary = world[key]
 
-		if chunk.get("dirty", false):
+				if chunk.get("dirty", false) or not _has_tiles_in_map(key, center, world_width_chunks):
 			var tiles: Array = chunk["tiles"]
 			draw_chunk(key, center, world_width_chunks, tiles)
 			chunk["dirty"] = false
@@ -61,3 +61,7 @@ func draw_chunk(chunk_coord: Vector2i, center: Vector2i, world_width_chunks: int
 			# Correct Godot 4 signature: layer, coords, source_id, atlas_coords
 			set_cell(0, Vector2i(base_x + x, base_y + y), 0, Vector2i(t.tile_id, 0))
 
+
+func _has_tiles_in_map(coord: Vector2i, center: Vector2i, width: int) -> bool:
+	# Logic to check a sample tile to see if it's empty
+	return get_cell_source_id(0, coord * _chunk_size()) != -1
