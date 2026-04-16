@@ -88,6 +88,7 @@ func _physics_process(delta: float) -> void:
 			# Snap camera to prevent interpolation jump across world
 			cam.global_position.x = wrapped_x
 			cam.reset_smoothing()
+			cam.force_update_scroll()
 			cam.force_update_scroll() # Force immediate update to prevent lag
 			changed = true
 		var clamped_y: float = clamp(global_position.y, 0.0, world_height_px - 1.0)
