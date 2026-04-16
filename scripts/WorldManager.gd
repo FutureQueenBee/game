@@ -2,8 +2,8 @@ extends Node
 
 @export var CHUNK_SIZE: int = 32
 @export var TILE_SIZE: int = 16
-@export var ACTIVE_RADIUS: int = 5
-@export var UNLOAD_BUFFER: int = 2
+@export var ACTIVE_RADIUS: int = 12
+@export var UNLOAD_BUFFER: int = 4
 @export var WORLD_WIDTH_TILES: int = 2048
 @export var WORLD_HEIGHT_TILES: int = 1024
 
@@ -180,7 +180,8 @@ func clamp_chunk_y(cy: int) -> int:
 
 func update_active_chunks(center: Vector2i) -> void:
 	var world_width = world_width_chunks()
-	for dx in range(-(ACTIVE_RADIUS + 3), ACTIVE_RADIUS + 4):
+	# Load a wide buffer (Radius + 2) to ensure no gaps are visible
+	for dx in range(-(ACTIVE_RADIUS + 2), ACTIVE_RADIUS + 3):
 		for dy in range(-(ACTIVE_RADIUS + 1), ACTIVE_RADIUS + 2):
 			var wrapped_cx = posmod(center.x + dx, world_width)
 			var clamped_cy = clamp(center.y + dy, 0, world_height_chunks() - 1)
@@ -195,7 +196,7 @@ func update_active_chunks(center: Vector2i) -> void:
 				}
 
 func unload_far_chunks(center: Vector2i) -> void:
-	var max_dist = ACTIVE_RADIUS + UNLOAD_BUFFER + 1
+	var max_dist = ACTIVE_RADIUS + UNLOAD_BUFFER
 	var world_width = world_width_chunks()
 	var to_unload = []
 
@@ -204,7 +205,7 @@ func unload_far_chunks(center: Vector2i) -> void:
 		var dx = min(dx_linear, world_width - dx_linear)
 		var dy = abs(key.y - center.y)
 
-		if dx > max_dist or dy > max_dist: 
+		if dx > max_dist or dy > max_dist:
 			to_unload.append(key)
 
 	for key in to_unload:
