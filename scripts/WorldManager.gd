@@ -2,190 +2,54 @@ extends Node
 
 @export var CHUNK_SIZE: int = 32
 @export var TILE_SIZE: int = 16
-@export var ACTIVE_RADIUS: int = 4
-@export var UNLOAD_BUFFER: int = 1
+@export var ACTIVE_RADIUS: int = 8
 @export var WORLD_WIDTH_TILES: int = 2048
 @export var WORLD_HEIGHT_TILES: int = 1024
 
 # ---------------------------------------------------------
 # WORLD + SIMULATION STATE
 # ---------------------------------------------------------
-var world: Dictionary = {}   # { Vector2i: { "tiles": Array, "dirty": bool, "sim_state": Dictionary } }
+var world: Dictionary = {}
+var visible_chunks: Array = []
 
-# Master time in DAYS
 var world_time_days: float = 0.0
-
-# How fast time moves (multiplier on real time)
 var time_scale: float = 1.0
-
-# How many real seconds correspond to 1 in-game day (tunable)
-var real_seconds_per_day: float = 1200.0  # 20 minutes per day as a starting point
-
+var real_seconds_per_day: float = 1200.0
 
 @onready var generator: Node = $"../ChunkGenerator"
 @onready var renderer: Node = $"../ChunkRenderer"
 @onready var player: Node2D = $"../Player"
 
-const DEBUG_LOG_PATH := "res://debug-cd6f1c.log"
-const DEBUG_RUN_ID := "post-fix"
-
-func _debug_log(hypothesis_id: String, location: String, message: String, data: Dictionary) -> void:
-	var f := FileAccess.open(DEBUG_LOG_PATH, FileAccess.READ_WRITE)
-	if f == null:
-		f = FileAccess.open(DEBUG_LOG_PATH, FileAccess.WRITE_READ)
-	if f == null:
-		return
-	f.seek_end()
-	var payload := {
-		"sessionId": "cd6f1c",
-		"runId": DEBUG_RUN_ID,
-		"hypothesisId": hypothesis_id,
-		"location": location,
-		"message": message,
-		"data": data,
-		"timestamp": Time.get_ticks_msec()
-	}
-	f.store_line(JSON.stringify(payload))
-	f.close()
-
-
 func _ready() -> void:
-	print("WorldManager player = ", player)
+	print("WorldManager initialized with Sliding Window logic")
+	if player:
+		player.connect("position_changed", _on_player_position_changed)
 
-
-func _process(delta: float) -> void:
-	# TEMP: you may want to remove this spam later
-	#print("WORLD SIZE: ", world.size())
-
-	if player == null:
-		return
-
-	# 1) Advance global time
-	var dt_days: float = advance_time(delta)
-
-	# 2) Run simulation for chunks (stub for now)
-	simulate_chunks(dt_days)
-
-	# 3) Chunk management + rendering
-	var player_chunk: Vector2i = world_to_chunk(player.global_position)
-	# #region agent log
-	_debug_log(
-		"H1",
-		"WorldManager.gd:_process",
-		"Player chunk from world_to_chunk",
-		{
-			"player_global_pos": player.global_position,
-			"player_chunk": player_chunk
-		}
-	)
-	# #endregion
-
-	update_active_chunks(player_chunk)
-	unload_far_chunks(player_chunk)
-
-	renderer.render_visible_chunks(world, player_chunk, world_width_chunks())
-
-
-# ---------------------------------------------------------
-# TIME SYSTEM
-# ---------------------------------------------------------
-func advance_time(delta: float) -> float:
-	# Convert real-time delta (seconds) into in-game days
-	# world_time_days += (delta * time_scale) / real_seconds_per_day
-	var dt_days := (delta * time_scale) / real_seconds_per_day
-	world_time_days += dt_days
-	return dt_days
-
-
-func set_time_scale(new_scale: float) -> void:
-	time_scale = max(new_scale, 0.0)
-	print("Time scale set to: ", time_scale)
-
-
-func jump_days(days: float) -> void:
-	world_time_days += days
-	print("Jumped world time by ", days, " days. Now: ", world_time_days)
-
-
-# ---------------------------------------------------------
-# INPUT: TIME CONTROLS (BASIC)
-# ---------------------------------------------------------
-func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo:
-		match event.keycode:
-			KEY_P:
-				# Toggle pause
-				if time_scale != 0.0:
-					time_scale = 0.0
-					print("Time paused")
-				else:
-					time_scale = 1.0
-					print("Time resumed (scale = 1.0)")
-			KEY_BRACKETLEFT:
-				# Slow down time
-				time_scale = max(time_scale / 2.0, 0.0)
-				print("Time scale decreased to: ", time_scale)
-			KEY_BRACKETRIGHT:
-				# Speed up time
-				if time_scale == 0.0:
-					time_scale = 1.0
-				else:
-					time_scale *= 2.0
-				print("Time scale increased to: ", time_scale)
-			KEY_J:
-				# Jump forward 1 day
-				jump_days(1.0)
-			KEY_K:
-				# Jump forward 365 days (1 year)
-				jump_days(365.0)
-
-
-# ---------------------------------------------------------
-# WORLD / CHUNK COORDINATES
-# ---------------------------------------------------------
 func world_to_chunk(pos: Vector2) -> Vector2i:
-	var raw_chunk := Vector2i(
-		floor(pos.x / (CHUNK_SIZE * TILE_SIZE)),
-		floor(pos.y / (CHUNK_SIZE * TILE_SIZE))
-	)
+	var chunk_world_size = CHUNK_SIZE * TILE_SIZE
 	return Vector2i(
-		posmod(raw_chunk.x, world_width_chunks()),
-		clamp(raw_chunk.y, 0, world_height_chunks() - 1)
+		posmod(floor(pos.x / chunk_world_size), world_width_chunks()),
+		clamp(floor(pos.y / chunk_world_size), 0, world_height_chunks() - 1)
 	)
 
+func world_width_chunks() -> int: return WORLD_WIDTH_TILES / CHUNK_SIZE
+func world_height_chunks() -> int: return WORLD_HEIGHT_TILES / CHUNK_SIZE
 
-func world_width_chunks() -> int:
-	return max(1, int(ceil(float(max(1, WORLD_WIDTH_TILES)) / float(CHUNK_SIZE))))
+func _on_player_position_changed(new_pos: Vector2) -> void:
+	var center = world_to_chunk(new_pos)
+	update_sliding_window(center)
 
-
-func world_height_chunks() -> int:
-	return max(1, int(ceil(float(max(1, WORLD_HEIGHT_TILES)) / float(CHUNK_SIZE))))
-
-
-func wrap_chunk_x(cx: int) -> int:
+func update_sliding_window(center: Vector2i) -> void:
 	var world_width = world_width_chunks()
-	return posmod(cx, world_width)
+	var new_visible_keys = []
 
-
-func clamp_chunk_y(cy: int) -> int:
-	return clamp(cy, 0, world_height_chunks() - 1)
-
-
-# ---------------------------------------------------------
-# LOAD CHUNKS INSIDE ACTIVE RADIUS
-# ---------------------------------------------------------
-
-
-
-
-
-func update_active_chunks(center: Vector2i) -> void:
-	var world_width = world_width_chunks()
-	for dx in range(-(ACTIVE_RADIUS + 3), ACTIVE_RADIUS + 4):
+	# 1. Determine which chunks SHOULD be visible (deterministic window)
+	for dx in range(-ACTIVE_RADIUS, ACTIVE_RADIUS + 1):
 		for dy in range(-ACTIVE_RADIUS, ACTIVE_RADIUS + 1):
 			var wrapped_cx = posmod(center.x + dx, world_width)
 			var clamped_cy = clamp(center.y + dy, 0, world_height_chunks() - 1)
 			var key = Vector2i(wrapped_cx, clamped_cy)
+			new_visible_keys.append(key)
 
 			if not world.has(key):
 				var tiles = generator.generate_chunk(wrapped_cx, clamped_cy)
@@ -195,49 +59,24 @@ func update_active_chunks(center: Vector2i) -> void:
 					"sim_state": {"last_update_time": world_time_days}
 				}
 
-func unload_far_chunks(center: Vector2i) -> void:
-	var max_dist = ACTIVE_RADIUS + UNLOAD_BUFFER
-	var world_width = world_width_chunks()
-	var to_unload = []
-
+	# 2. Immediate cleanup of chunks no longer in the sliding window
+	var to_remove = []
 	for key in world.keys():
-		# Calculate horizontal distance considering world wrap (shortest path)
-		var dx_linear = abs(key.x - center.x)
-		var dx = min(dx_linear, world_width - dx_linear)
-		var dy = abs(key.y - center.y)
+		if key not in new_visible_keys:
+			to_remove.append(key)
 
-		if dx > max_dist or dy > max_dist:
-			to_unload.append(key)
-
-	for key in to_unload:
+	for key in to_remove:
 		world.erase(key)
 
-func simulate_chunks(dt_days: float) -> void:
-	# For now, just update last_update_time so the structure is correct.
-	for raw_key in world.keys():
-		var key: Vector2i = raw_key as Vector2i
-		if key == null:
-			continue
+	visible_chunks = new_visible_keys
+	renderer.render_visible_chunks(world, center, world_width)
 
-		var chunk: Dictionary = world[key]
-		if not chunk.has("sim_state"):
-			continue
+func _process(delta: float) -> void:
+	# Time simulation remains in process
+	var dt_days := (delta * time_scale) / real_seconds_per_day
+	world_time_days += dt_days
+	simulate_chunks(dt_days)
 
-		var sim_state: Dictionary = chunk["sim_state"]
-
-		var last_time: float = sim_state.get("last_update_time", world_time_days)
-		var local_dt: float = world_time_days - last_time
-
-		# Placeholder: just advance last_update_time
-		sim_state["last_update_time"] = world_time_days
-
-		# Later: use local_dt to update fire, biomass, moisture, etc.
-
-func test_git_sync() -> void:
-	print("Git Sync Successful: Connection is working!")
-
-# Manual sync update: Thu Apr 16 05:11:05 2026
-
-# Manual sync update: Thu Apr 16 05:24:31 2026
-
-# Manual sync update: Thu Apr 16 05:24:33 2026
+func simulate_chunks(_dt: float) -> void:
+	for key in world.keys():
+		world[key]["sim_state"]["last_update_time"] = world_time_days
