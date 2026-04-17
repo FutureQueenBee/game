@@ -49,4 +49,4 @@ func draw_chunk(chunk_coord: Vector2i, center: Vector2i, world_width_chunks: int
 		for y: int in range(chunk_size):
 			var t = tiles[x][y]
 			# Layer 0, Grid Pos, Source ID 0, Atlas Coords
-			set_cell(0, Vector2i(base_x + x, base_y + y), 0, Vector2i(t.tile_id, 0)), 0, Vector2i(t.tile_id, 0))
+			set_cell(0, Vector2i(base_x + x, base_y + y), 0, Vector2i(t.tile_id, 0))
