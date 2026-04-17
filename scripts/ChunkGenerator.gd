@@ -37,14 +37,17 @@ func generate_chunk(cx: int, cy: int) -> Array:
 			var sample_x = cos(angle) * radius
 			var sample_z = sin(angle) * radius
 			
-			var alt = noise_alt.get_noise_3d(sample_x, wy, sample_z)
-			var moist_raw = noise_moist.get_noise_3d(sample_x, wy, sample_z)
-			var temp_raw = noise_temp.get_noise_3d(sample_x, wy, sample_z)
+						var world_height = world_manager.WORLD_HEIGHT_TILES
+			# Normalize Y to 0.0 (poles) -> 1.0 (equator) -> 0.0 (poles)
+			var lat_factor = 1.0 - abs((float(wy) / world_height) * 2.0 - 1.0)
 			
+			# Combine Noise with Latitude (0.0 to 1.0 range)
+			var temp_final = clamp((temp_raw * 0.5 + 0.5) * 0.4 + (lat_factor * 0.6), 0.0, 1.0)
+
 			var t = WorldTile.new()
 			t.altitude = alt
-			t.moisture = moist_raw
-			t.temperature = temp_raw
+			t.moisture = moist_raw * 0.5 + 0.5 # Normalize to 0-1
+			t.temperature = temp_final
 			t.classify_biome()
 			
 			row.append(t)
