@@ -38,13 +38,14 @@ func draw_tile_preview(mode: String) -> void:
 		var chunk = world_manager.world[chunk_coord]
 		var tiles = chunk["tiles"]
 		
+		# Calculate visual wrap position (sync with ChunkRenderer shortest-path)
 		var player_chunk = world_manager.world_to_chunk(player.global_position)
 		var dx = chunk_coord.x - player_chunk.x
 		var world_width_chunks = world_manager.WORLD_WIDTH_TILES / chunk_size
 		dx = posmod(dx + int(world_width_chunks / 2), world_width_chunks) - int(world_width_chunks / 2)
 		
 		var base_x = (player_chunk.x + dx) * chunk_world_size
-		var base_y = chunk_coord.y * chunk_world_size
+		var base_y = int(chunk_coord.y) * chunk_world_size
 	
 		for x in range(chunk_size):
 			for y in range(chunk_size):
@@ -86,5 +87,9 @@ func biome_color(b_name: String) -> Color:
 func draw_chunk_borders() -> void:
 	var chunk_world_size = world_manager.CHUNK_SIZE * world_manager.TILE_SIZE
 	for chunk_coord in world_manager.world.keys():
-		var world_pos = Vector2(chunk_coord.x * chunk_world_size, chunk_coord.y * chunk_world_size)
+		var player_chunk = world_manager.world_to_chunk(player.global_position)
+		var dx = chunk_coord.x - player_chunk.x
+		var world_width_chunks = world_manager.WORLD_WIDTH_TILES / world_manager.CHUNK_SIZE
+		dx = posmod(dx + int(world_width_chunks / 2), world_width_chunks) - int(world_width_chunks / 2)
+		var world_pos = Vector2((player_chunk.x + dx) * chunk_world_size, chunk_coord.y * chunk_world_size)
 		draw_rect(Rect2(world_pos, Vector2(chunk_world_size, chunk_world_size)), Color(0,0,0,1), false, 2)
