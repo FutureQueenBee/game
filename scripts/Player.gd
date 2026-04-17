@@ -1,5 +1,5 @@
-signal position_changed(new_pos: Vector2)
 extends CharacterBody2D
+signal position_changed(new_pos: Vector2)
 
 @export var SPEED := 10000.0
 
