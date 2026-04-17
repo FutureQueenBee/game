@@ -181,9 +181,9 @@ func clamp_chunk_y(cy: int) -> int:
 
 func update_active_chunks(center: Vector2i) -> void:
 	var world_width = world_width_chunks()
-	for dx in range(-(ACTIVE_RADIUS + 1), ACTIVE_RADIUS + 2):
-		for dy in range(-(ACTIVE_RADIUS + 1), ACTIVE_RADIUS + 2):
-			var wrapped_cx = wrap_chunk_x(center.x + dx)
+	for dx in range(-(ACTIVE_RADIUS + 3), ACTIVE_RADIUS + 4):
+		for dy in range(-ACTIVE_RADIUS, ACTIVE_RADIUS + 1):
+			var wrapped_cx = posmod(center.x + dx, world_width)
 			var clamped_cy = clamp(center.y + dy, 0, world_height_chunks() - 1)
 			var key = Vector2i(wrapped_cx, clamped_cy)
 
@@ -193,7 +193,6 @@ func update_active_chunks(center: Vector2i) -> void:
 					"tiles": tiles,
 					"dirty": true,
 					"sim_state": {"last_update_time": world_time_days}
-				}
 				}
 
 func unload_far_chunks(center: Vector2i) -> void:
