@@ -1,3 +1,4 @@
+signal position_changed(new_pos: Vector2)
 extends CharacterBody2D
 
 @export var SPEED := 10000.0
@@ -74,6 +75,7 @@ func _physics_process(delta: float) -> void:
 
 	velocity = input_vec * SPEED
 	move_and_slide()
+	emit_signal("position_changed", global_position)
 
 	if world_manager != null:
 		var world_width_px: float = float(world_manager.WORLD_WIDTH_TILES * world_manager.TILE_SIZE)

@@ -23,7 +23,7 @@ var real_seconds_per_day: float = 1200.0
 func _ready() -> void:
 	print("WorldManager initialized with Sliding Window logic")
 	if player:
-		player.connect("position_changed", _on_player_position_changed)
+		player.position_changed.connect(_on_player_position_changed)
 
 func world_to_chunk(pos: Vector2) -> Vector2i:
 	var chunk_world_size = CHUNK_SIZE * TILE_SIZE
