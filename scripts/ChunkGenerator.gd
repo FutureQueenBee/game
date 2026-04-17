@@ -34,7 +34,7 @@ func generate_chunk(cx: int, cy: int) -> Array:
 			var sample_z = sin(angle) * radius
 
 			# Noise sampling
-			var alt = noise_alt.get_noise_3d(sample_x, wy, sample_z)
+			var alt = noise_alt.get_noise_3d(sample_x, wy, sample_z) * 1.2
 			var moist_raw = noise_moist.get_noise_3d(sample_x, wy, sample_z)
 			var temp_raw = noise_temp.get_noise_3d(sample_x, wy, sample_z)
 

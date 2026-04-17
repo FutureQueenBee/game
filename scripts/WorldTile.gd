@@ -26,13 +26,13 @@ var tile_id: int
 
 func classify_biome():
 	# 1. Altitude Tiering (Water vs Land)
-	if altitude < -0.6:
+	if altitude < -0.5:
 		tile_id = TILE_OCEAN_DEEP
 		biome = "ocean_deep"
-	elif altitude < -0.3:
+	elif altitude < -0.25:
 		tile_id = TILE_OCEAN_MID
 		biome = "ocean_mid"
-	elif altitude < -0.1:
+	elif altitude < -0.05:
 		tile_id = TILE_OCEAN_SHELF
 		biome = "ocean_shelf"
 	elif altitude < 0.0:

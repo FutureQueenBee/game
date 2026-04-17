@@ -3,8 +3,8 @@ extends Node
 @export var CHUNK_SIZE: int = 32
 @export var TILE_SIZE: int = 16
 @export var ACTIVE_RADIUS: int = 8
-@export var WORLD_WIDTH_TILES: int = 2048
-@export var WORLD_HEIGHT_TILES: int = 1024
+@export var WORLD_WIDTH_TILES: int = 4096
+@export var WORLD_HEIGHT_TILES: int = 2048
 
 # ---------------------------------------------------------
 # WORLD + SIMULATION STATE
