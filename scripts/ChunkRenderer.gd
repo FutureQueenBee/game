@@ -29,6 +29,7 @@ func _chunk_size() -> int:
 func render_visible_chunks(world: Dictionary, center: Vector2i, world_width_chunks: int) -> void:
 	for key in world.keys():
 		var chunk: Dictionary = world[key]
+		# Only draw if explicitly dirty to save CPU/GPU cycles
 		if chunk.get("dirty", false):
 			var tiles: Array = chunk["tiles"]
 			draw_chunk(key, center, world_width_chunks, tiles)
@@ -36,19 +37,24 @@ func render_visible_chunks(world: Dictionary, center: Vector2i, world_width_chun
 
 func draw_chunk(chunk_coord: Vector2i, center: Vector2i, world_width_chunks: int, tiles: Array) -> void:
 	var chunk_size: int = _chunk_size()
-	var dx = chunk_coord.x - center.x
-	if world_width_chunks > 0:
-		dx = posmod(dx + world_width_chunks / 2, world_width_chunks) - (world_width_chunks / 2)
 	
-	var draw_x = center.x + dx
+	# 1. Calculate wrapped horizontal offset (shortest path)
+	var dx: int = chunk_coord.x - center.x
+	if world_width_chunks > 0:
+		dx = posmod(dx + int(world_width_chunks / 2), world_width_chunks) - int(world_width_chunks / 2)
+	
+	# 2. Determine base visual coordinates using integer math only
+	var draw_x: int = center.x + dx
 	var base_x: int = draw_x * chunk_size
-	var base_y: int = chunk_coord.y * chunk_size
+	var base_y: int = int(chunk_coord.y) * chunk_size
 
-	# Safety wrap for TileMap coordinate space
+	# 3. Final safety wrap for TileMap coordinate space (must be positive for consistency)
 	if world_width_chunks > 0:
 		base_x = posmod(base_x, world_width_chunks * chunk_size)
 
+	# 4. Batch set cells
 	for x in range(chunk_size):
 		for y in range(chunk_size):
 			var t = tiles[x][y]
-			set_cell(0, Vector2i(base_x + x, base_y + y), 0, Vector2i(t.tile_id, 0))
+			# Godot 4: layer, coords, source_id, atlas_coords
+			set_cell(0, Vector2i(base_x + x, base_y + y), 0, Vector2i(int(t.tile_id), 0))

@@ -17,10 +17,16 @@ const TILE_SNOW: int = 12
 const TILE_RIVER: int = 13
 const TILE_LAKE: int = 14
 
-# Climate Fields
+# Climate Fields (Raw)
 var altitude: float
 var moisture: float
 var temperature: float
+
+# Climate Engine Fields (Processed)
+var temp_final: float
+var moisture_final: float
+
+# Biome Metadata
 var biome: String
 var tile_id: int
 
