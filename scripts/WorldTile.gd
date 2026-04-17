@@ -50,6 +50,9 @@ func classify_biome():
 			else:
 				tile_id = TILE_TUNDRA
 				biome = "tundra"
+		        elif altitude < 0.15:
+            tile_id = TILE_LOWLAND
+            biome = "lowland"
 		elif altitude > 0.8:
 			tile_id = TILE_PEAK
 			biome = "peak"
