@@ -47,4 +47,4 @@ func draw_chunk(chunk_coord: Vector2i, center: Vector2i, world_width_chunks: int
 	for x in range(chunk_size):
 		for y in range(chunk_size):
 			var t = tiles[x][y]
-			set_cell(0, Vector2i(base_x + x, base_y + y), 0, Vector2i(t.tile_id, 0)), 0, Vector2i(t.tile_id, 0))
+			set_cell(0, Vector2i(base_x + x, base_y + y), 0, Vector2i(t.tile_id, 0))
