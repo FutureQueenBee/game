@@ -79,6 +79,7 @@ func _physics_process(delta: float) -> void:
 		var world_width_px: float = float(world_manager.WORLD_WIDTH_TILES * world_manager.TILE_SIZE)
 		var world_height_px: float = float(world_manager.WORLD_HEIGHT_TILES * world_manager.TILE_SIZE)
 		var pre_constrain_pos: Vector2 = global_position
+		var wrapped_x: float = fposmod(global_position.x, world_width_px)
 		var changed: bool = false
 		if global_position.x < 0.0:
 			global_position.x += world_width_px
