@@ -80,11 +80,10 @@ func _physics_process(delta: float) -> void:
 		var world_height_px: float = float(world_manager.WORLD_HEIGHT_TILES * world_manager.TILE_SIZE)
 		var pre_constrain_pos: Vector2 = global_position
 		var changed: bool = false
-		if global_position.x < 0.0 or global_position.x >= world_width_px:
-			var wrapped_x: float = fposmod(global_position.x, world_width_px)
-			if wrapped_x >= world_width_px or wrapped_x < 0.0:
-				wrapped_x = fmod(wrapped_x + world_width_px, world_width_px)
-			global_position.x = wrapped_x
+		if global_position.x < 0.0:
+			global_position.x += world_width_px
+		elif global_position.x >= world_width_px:
+			global_position.x -= world_width_px
 			# Snap camera to prevent interpolation jump across world
 			cam.global_position.x = wrapped_x
 			cam.reset_smoothing()
