@@ -37,6 +37,7 @@ func render_visible_chunks(world: Dictionary, center: Vector2i, world_width_chun
 
 func draw_chunk(chunk_coord: Vector2i, center: Vector2i, world_width_chunks: int, tiles: Array) -> void:
 	var chunk_size: int = _chunk_size()
+	# Determine if chunk should be drawn to the left or right of player based on proximity
 	var dx = chunk_coord.x - center.x
 	if world_width_chunks > 0:
 		dx = posmod(dx + world_width_chunks / 2, world_width_chunks) - (world_width_chunks / 2)
