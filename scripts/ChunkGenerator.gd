@@ -18,17 +18,32 @@ func _ready():
 func generate_chunk(cx: int, cy: int) -> Array:
 	var chunk_size = world_manager.CHUNK_SIZE
 	var world_width_tiles = world_manager.WORLD_WIDTH_TILES
-	
-			var world_height = world_manager.WORLD_HEIGHT_TILES
+	var world_height = world_manager.WORLD_HEIGHT_TILES
+
+	var chunk = []
+	for x in range(chunk_size):
+		var row = []
+		for y in range(chunk_size):
+			var wx = cx * chunk_size + x
+			var wy = cy * chunk_size + y
+
+			# 3D Cylindrical wrapping math
+			var angle = (float(wx) / world_width_tiles) * TAU
+			var radius = world_width_tiles / TAU
+			var sample_x = cos(angle) * radius
+			var sample_z = sin(angle) * radius
+
+			var alt = noise_alt.get_noise_3d(sample_x, wy, sample_z)
+			var moist_raw = noise_moist.get_noise_3d(sample_x, wy, sample_z)
+			var temp_raw = noise_temp.get_noise_3d(sample_x, wy, sample_z)
+
 			# 1. Latitude Gradient (0.0 poles, 1.0 equator)
 			var lat_factor = 1.0 - abs((float(wy) / world_height) * 2.0 - 1.0)
 			
 			# 2. Altitude Cooling (Lapse Rate)
-			# As altitude increases from 0.0 to 1.0, temperature drops
 			var alt_cooling = clamp(alt * 0.5, 0.0, 0.5) if alt > 0 else 0.0
 			
 			# 3. Final Temperature Calculation
-			# We give latitude high weight (0.7) and noise lower weight (0.3) for distinct zones
 			var temp_base = (lat_factor * 0.7) + (temp_raw * 0.5 + 0.5) * 0.3
 			var temp_final = clamp(temp_base - alt_cooling, 0.0, 1.0)
 
