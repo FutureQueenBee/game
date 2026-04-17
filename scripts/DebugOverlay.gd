@@ -20,38 +20,43 @@ func _input(event: InputEvent) -> void:
 func _physics_process(_delta: float) -> void:
 	if enabled: queue_redraw()
 
+func get_tile_preview_mode() -> String:
+	return tile_preview_modes[tile_preview_index]
+
+func get_chunk_preview_mode() -> String:
+	return "none"
+
 func _draw() -> void:
 	if not enabled or player == null: return
-	
-	var mode = tile_preview_modes[tile_preview_index]
+
+	var mode = get_tile_preview_mode()
 	if mode != "none":
 		draw_tile_preview(mode)
-	
+
 	draw_chunk_borders()
 
 func draw_tile_preview(mode: String) -> void:
 	var chunk_size = world_manager.CHUNK_SIZE
 	var tile_size = world_manager.TILE_SIZE
 	var chunk_world_size = chunk_size * tile_size
-	
+
 	for chunk_coord in world_manager.world.keys():
 		var chunk = world_manager.world[chunk_coord]
 		var tiles = chunk["tiles"]
-		
-		# Calculate visual wrap position (sync with ChunkRenderer shortest-path)
+
 		var player_chunk = world_manager.world_to_chunk(player.global_position)
 		var dx = chunk_coord.x - player_chunk.x
 		var world_width_chunks = world_manager.WORLD_WIDTH_TILES / chunk_size
 		dx = posmod(dx + int(world_width_chunks / 2), world_width_chunks) - int(world_width_chunks / 2)
-		
+
 		var base_x = (player_chunk.x + dx) * chunk_world_size
 		var base_y = int(chunk_coord.y) * chunk_world_size
-	
+
 		for x in range(chunk_size):
 			for y in range(chunk_size):
 				var t = tiles[x][y]
 				var color = Color(0,0,0,0)
-				
+
 				match mode:
 					"altitude":
 						if t.altitude < 0: color = Color(0, 0, 0.5 + clamp(t.altitude, -0.5, 0.0), 0.5)
@@ -62,7 +67,7 @@ func draw_tile_preview(mode: String) -> void:
 						color = Color(clamp(t.temperature, 0.0, 1.0), 0.2, 1.0 - clamp(t.temperature, 0.0, 1.0), 0.6)
 					"biome":
 						color = biome_color(t.biome)
-				
+
 				draw_rect(Rect2(Vector2(base_x + x*tile_size, base_y + y*tile_size), Vector2(tile_size, tile_size)), color)
 
 func biome_color(b_name: String) -> Color:
