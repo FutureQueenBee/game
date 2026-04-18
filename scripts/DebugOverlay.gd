@@ -10,6 +10,11 @@ var tile_preview_modes := ["none", "altitude", "moisture", "temperature", "biome
 var tile_preview_index := 0
 
 func _input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and event.keycode == KEY_CAPSLOCK:
+		var is_mass_loading = (world_manager.ACTIVE_RADIUS > 10)
+		world_manager.toggle_mass_exploration(!is_mass_loading)
+		print("Mass Exploration Mode: ", !is_mass_loading)
+
 	if event.is_action_pressed("debug_toggle"):
 		enabled = !enabled
 		queue_redraw()

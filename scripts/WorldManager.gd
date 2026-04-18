@@ -11,6 +11,8 @@ extends Node
 # ---------------------------------------------------------
 var world: Dictionary = {}
 var visible_chunks: Array = []
+var _original_radius: int = ACTIVE_RADIUS
+
 
 var world_time_days: float = 0.0
 var time_scale: float = 1.0
@@ -80,3 +82,14 @@ func _process(delta: float) -> void:
 func simulate_chunks(_dt: float) -> void:
 	for key in world.keys():
 		world[key]["sim_state"]["last_update_time"] = world_time_days
+
+func toggle_mass_exploration(enabled: bool) -> void:
+	if enabled:
+		_original_radius = ACTIVE_RADIUS
+		ACTIVE_RADIUS = 24 # Wide area loading
+	else:
+		ACTIVE_RADIUS = _original_radius
+	
+	# Trigger an immediate update from the current player position
+	if player:
+		_on_player_position_changed(player.global_position)
