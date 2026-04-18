@@ -41,7 +41,7 @@ func generate_chunk(cx: int, cy: int) -> Array:
 			# Blend Macro (Skeleton) with Micro (Detail)
 			var macro_alt = world_manager.get_atlas_value("altitude", wx, wy)
 			var micro_alt = noise_alt.get_noise_3d(sample_x, wy, sample_z)
-			var alt = (macro_alt * 0.4) + (micro_alt * 0.8) + 0.05 # Organic coasts with land bias
+			var alt = (macro_alt * 0.3) + (micro_alt * 0.8) + 0.15 # Ported 'Craggy' parameters
 
 			var moist_raw = noise_moist.get_noise_3d(sample_x, wy, sample_z)
 			var temp_raw = noise_temp.get_noise_3d(sample_x, wy, sample_z)
