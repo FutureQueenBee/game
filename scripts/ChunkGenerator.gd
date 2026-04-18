@@ -39,13 +39,20 @@ func generate_chunk(cx: int, cy: int) -> Array:
 			var temp_raw = noise_temp.get_noise_3d(sample_x, wy, sample_z)
 
 			# Latitude Temperature Gradient
+			
+			# 1. Latitude factor (0 poles, 1 equator)
 			var lat_factor = 1.0 - abs((float(wy) / world_height) * 2.0 - 1.0)
-			var temp_final = clamp((temp_raw * 0.5 + 0.5) * 0.4 + (lat_factor * 0.6), 0.0, 1.0)
-
+			
+			# 2. Temperature: 60% Latitude, 40% Noise
+			var temp_final = clamp((lat_factor * 0.6) + ((temp_raw * 0.5 + 0.5) * 0.4), 0.0, 1.0)
+			
+			# 3. Moisture: Pure Noise (0-1 range)
+			var moist_final = clamp(moist_raw * 0.5 + 0.5, 0.0, 1.0)
+			
 			var t = WorldTile.new()
 			t.altitude = alt
-			t.moisture = moist_raw * 0.5 + 0.5
 			t.temperature = temp_final
+			t.moisture = moist_final
 			t.classify_biome()
 
 			row.append(t)
