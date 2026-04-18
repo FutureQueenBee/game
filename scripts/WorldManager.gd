@@ -141,33 +141,46 @@ func calculate_flow_accumulation(chunk_key: Vector2i) -> void:
 	chunk["accumulation_ready"] = true
 	chunk["dirty"] = true
 
-# --- GLOBAL MACRO DATA (PHASE 2) ---
-var macro_altitude_map: Array = [] # 2D Array of floats
-var macro_grid_width: int = 128
-var macro_grid_height: int = 64
 
-func generate_global_pre_pass() -> void:
-	print("WorldManager: Generating Global Macro Pass...")
-	macro_altitude_map.clear()
+# --- PLANETARY ATLAS (GLOBAL SIMULATION) ---
+var planetary_atlas: Dictionary = {
+	"altitude": [],
+	"heat": [],
+	"moisture": [],
+	"activity": [] # For traders/herds
+}
+var atlas_width: int = 128
+var atlas_height: int = 64
+
+func generate_planetary_atlas() -> void:
+	print("WorldManager: Building Multi-Layer Atlas...")
+	for key in planetary_atlas.keys():
+		planetary_atlas[key].clear()
 	
-	var radius = WORLD_WIDTH_TILES / TAU
-	var x_step = float(WORLD_WIDTH_TILES) / macro_grid_width
-	var y_step = float(WORLD_HEIGHT_TILES) / macro_grid_height
-
-	for y in range(macro_grid_height):
-		var row = []
-		for x in range(macro_grid_width):
-			var wx = x * x_step
-			var wy = y * y_step
+	# Generate Layers
+	for y in range(atlas_height):
+		var row_alt = []
+		var row_temp = []
+		for x in range(atlas_width):
+			var wx = x * (float(WORLD_WIDTH_TILES) / atlas_width)
+			var wy = y * (float(WORLD_HEIGHT_TILES) / atlas_height)
 			var angle = (float(wx) / WORLD_WIDTH_TILES) * TAU
 			
-			# Sample at very low frequency to get core basins
-			var alt = generator.noise_alt.get_noise_3d(cos(angle) * radius * 0.001, wy * 0.001, sin(angle) * radius * 0.001)
-			row.append(alt)
-		macro_altitude_map.append(row)
-	print("WorldManager: Macro Pass Complete.")
+			# Altitude Skeleton
+			var a = generator.noise_alt.get_noise_3d(cos(angle)*300, wy, sin(angle)*300)
+			row_alt.append(a)
+			
+			# Temperature Skeleton (Latitude + Macro Noise)
+			var lat_f = 1.0 - abs((float(wy) / WORLD_HEIGHT_TILES) * 2.0 - 1.0)
+			row_temp.append(lat_f)
+		
+		planetary_atlas["altitude"].append(row_alt)
+		planetary_atlas["heat"].append(row_temp)
+	print("WorldManager: Atlas Ready for Global Simulation.")
 
-func get_macro_altitude(world_x: float, world_y: float) -> float:
-	var gx = int(posmod(world_x / (float(WORLD_WIDTH_TILES) / macro_grid_width), macro_grid_width))
-	var gy = int(clamp(world_y / (float(WORLD_HEIGHT_TILES) / macro_grid_height), 0, macro_grid_height - 1))
-	return macro_altitude_map[gy][gx]
+func get_atlas_value(layer: String, world_x: float, world_y: float) -> float:
+	if not planetary_atlas.has(layer): return 0.0
+	var gx = int(posmod(world_x / (float(WORLD_WIDTH_TILES) / atlas_width), atlas_width))
+	var gy = int(clamp(world_y / (float(WORLD_HEIGHT_TILES) / atlas_height), 0, atlas_height - 1))
+	return planetary_atlas[layer][gy][gx]
+
