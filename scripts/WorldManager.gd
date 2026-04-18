@@ -27,14 +27,13 @@ var real_seconds_per_day: float = 1200.0
 @onready var player: Node2D = $"../Player"
 
 func _ready() -> void:
-	print("WorldManager: Initializing architecture...")
+	print("WorldManager: Initializing Atlas architecture...")
 	generate_planetary_atlas()
 	if player:
 		player.position_changed.connect(_on_player_position_changed)
 
 func generate_planetary_atlas() -> void:
-	print("WorldManager: Building Multi-Layer Atlas...")
-	# Initialize channels
+	# Initialize all channels to avoid null access errors
 	for layer in planetary_atlas.keys():
 		planetary_atlas[layer] = []
 		for y in range(atlas_height):
@@ -45,21 +44,21 @@ func generate_planetary_atlas() -> void:
 
 	var radius = float(WORLD_WIDTH_TILES) / TAU
 
-	# 1. Altitude & Heat Pass
+	# 1. Primary Simulation Pass
 	for y in range(atlas_height):
 		for x in range(atlas_width):
 			var wx = x * (float(WORLD_WIDTH_TILES) / atlas_width)
 			var wy = y * (float(WORLD_HEIGHT_TILES) / atlas_height)
 			var angle = (float(wx) / WORLD_WIDTH_TILES) * TAU
 
-			# Altitude
+			# Altitude Macro-Basins
 			var a = generator.noise_alt.get_noise_3d(cos(angle)*300, wy, sin(angle)*300)
 			planetary_atlas["altitude"][y][x] = a
 
-			# Heat (Latitude)
+			# Latitude Heat Gradient
 			var lat_f = 1.0 - abs((float(wy) / WORLD_HEIGHT_TILES) * 2.0 - 1.0)
 			planetary_atlas["heat"][y][x] = lat_f
-	
+
 	print("WorldManager: Atlas Generation Complete.")
 
 func get_atlas_value(layer: String, world_x: float, world_y: float) -> float:
