@@ -6,13 +6,9 @@ extends Node
 @export var WORLD_WIDTH_TILES: int = 4096
 @export var WORLD_HEIGHT_TILES: int = 2048
 
-# ---------------------------------------------------------
-# WORLD + SIMULATION STATE
-# ---------------------------------------------------------
 var world: Dictionary = {}
 var visible_chunks: Array = []
 var _original_radius: int = ACTIVE_RADIUS
-
 
 var world_time_days: float = 0.0
 var time_scale: float = 1.0
@@ -23,7 +19,7 @@ var real_seconds_per_day: float = 1200.0
 @onready var player: Node2D = $"../Player"
 
 func _ready() -> void:
-	print("WorldManager initialized with Sliding Window logic")
+	print("WorldManager: Optimized Sliding Window initialized")
 	if player:
 		player.position_changed.connect(_on_player_position_changed)
 
@@ -45,7 +41,7 @@ func update_sliding_window(center: Vector2i) -> void:
 	var world_width = world_width_chunks()
 	var new_visible_keys = []
 
-	# 1. Determine which chunks SHOULD be visible (deterministic window)
+	# 1. Identify visibility
 	for dx in range(-ACTIVE_RADIUS, ACTIVE_RADIUS + 1):
 		for dy in range(-ACTIVE_RADIUS, ACTIVE_RADIUS + 1):
 			var wrapped_cx = posmod(center.x + dx, world_width)
@@ -54,6 +50,7 @@ func update_sliding_window(center: Vector2i) -> void:
 			new_visible_keys.append(key)
 
 			if not world.has(key):
+				# Load data
 				var tiles = generator.generate_chunk(wrapped_cx, clamped_cy)
 				world[key] = {
 					"tiles": tiles,
@@ -61,35 +58,34 @@ func update_sliding_window(center: Vector2i) -> void:
 					"sim_state": {"last_update_time": world_time_days}
 				}
 
-	# 2. Immediate cleanup of chunks no longer in the sliding window
+	# 2. SAFE UNLOAD: Clear visuals BEFORE erasing data to prevent memory leaks
 	var to_remove = []
 	for key in world.keys():
 		if key not in new_visible_keys:
 			to_remove.append(key)
 
 	for key in to_remove:
+		# Explicitly clear TileMap cells at this chunk's position
+		# Note: This requires renderer to have a clear_chunk method
+		if renderer.has_method("clear_chunk"):
+			renderer.clear_chunk(key, center, world_width)
 		world.erase(key)
 
 	visible_chunks = new_visible_keys
 	renderer.render_visible_chunks(world, center, world_width)
 
+func toggle_mass_exploration(enabled: bool) -> void:
+	if enabled:
+		_original_radius = ACTIVE_RADIUS
+		ACTIVE_RADIUS = 24
+	else:
+		ACTIVE_RADIUS = _original_radius
+	if player: _on_player_position_changed(player.global_position)
+
 func _process(delta: float) -> void:
-	# Time simulation remains in process
-	var dt_days := (delta * time_scale) / real_seconds_per_day
-	world_time_days += dt_days
-	simulate_chunks(dt_days)
+	world_time_days += (delta * time_scale) / real_seconds_per_day
+	simulate_chunks(delta)
 
 func simulate_chunks(_dt: float) -> void:
 	for key in world.keys():
 		world[key]["sim_state"]["last_update_time"] = world_time_days
-
-func toggle_mass_exploration(enabled: bool) -> void:
-	if enabled:
-		_original_radius = ACTIVE_RADIUS
-		ACTIVE_RADIUS = 24 # Wide area loading
-	else:
-		ACTIVE_RADIUS = _original_radius
-	
-	# Trigger an immediate update from the current player position
-	if player:
-		_on_player_position_changed(player.global_position)
