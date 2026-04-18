@@ -112,3 +112,10 @@ func _process(delta: float) -> void:
 func simulate_chunks(_dt: float) -> void:
 	for key in world.keys():
 		world[key]["sim_state"]["last_update_time"] = world_time_days
+
+func world_to_chunk(pos: Vector2) -> Vector2i:
+	var chunk_world_size = CHUNK_SIZE * TILE_SIZE
+	return Vector2i(
+		posmod(floor(pos.x / chunk_world_size), world_width_chunks()),
+		clamp(floor(pos.y / chunk_world_size), 0, world_height_chunks() - 1)
+	)
