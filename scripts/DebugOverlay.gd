@@ -25,6 +25,14 @@ func _input(event: InputEvent) -> void:
 		print("Atlas Mode: ", atlas_preview_modes[atlas_preview_index])
 		queue_redraw()
 
+
+func get_tile_preview_mode() -> String:
+	return tile_preview_modes[tile_preview_index]
+
+func get_chunk_preview_mode() -> String:
+	# Stub for compatibility with DebugLabel
+	return "none"
+
 func _draw() -> void:
 	if not enabled or player == null: return
 
