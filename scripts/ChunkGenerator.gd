@@ -11,8 +11,11 @@ func _ready():
 	noise_moist.seed = randi()
 	noise_temp.seed = randi()
 	
-	noise_alt.frequency = 0.005
-	noise_moist.frequency = 0.01
+	noise_alt.frequency = 0.002
+	noise_alt.fractal_octaves = 5
+	noise_alt.fractal_lacunarity = 2.0
+	noise_alt.fractal_gain = 0.5
+	noise_moist.frequency = 0.004
 	noise_temp.frequency = 0.01
 	print("ChunkGenerator: High-fidelity streaming generator initialized.")
 
@@ -44,7 +47,7 @@ func generate_chunk(cx: int, cy: int) -> Array:
 			var lat_factor = 1.0 - abs((float(wy) / world_height) * 2.0 - 1.0)
 			
 			# 2. Temperature: 60% Latitude, 40% Noise
-			var temp_final = clamp((lat_factor * 0.6) + ((temp_raw * 0.5 + 0.5) * 0.4), 0.0, 1.0)
+			var temp_final = clamp((lat_factor * 0.4) + ((temp_raw * 0.5 + 0.5) * 0.6), 0.0, 1.0)
 			
 			# 3. Moisture: Pure Noise (0-1 range)
 			var moist_final = clamp(moist_raw * 0.5 + 0.5, 0.0, 1.0)

@@ -37,7 +37,7 @@ func classify_biome():
 	
 	# Clamp bands to valid matrix indices
 	temp_band = clampi(int(temperature * 5), 0, 4)
-	moisture_band = clampi(int(moisture * 5), 0, 4)
+	moisture_band = clampi(int(pow(moisture, 1.2) * 5), 0, 4) # Bias toward aridity
 	
 	tile_id = BIOME_MATRIX[temp_band][moisture_band]
 	biome = BIOME_NAMES.get(tile_id, "unknown")
