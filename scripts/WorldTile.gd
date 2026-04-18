@@ -1,43 +1,86 @@
 class_name WorldTile
 
-# Climate Fields
+# --- TILE ATLAS MAPPING ---
+const TILE_OCEAN_DEEP: int = 0
+const TILE_OCEAN_MID: int = 1
+const TILE_OCEAN_SHELF: int = 2
+const TILE_COAST: int = 3
+const TILE_LOWLAND: int = 4
+const TILE_HIGHLAND: int = 5
+const TILE_MOUNTAIN: int = 6
+const TILE_PEAK: int = 7
+const TILE_DESERT: int = 8
+const TILE_GRASSLAND: int = 9
+const TILE_FOREST: int = 10
+const TILE_TUNDRA: int = 11
+const TILE_SNOW: int = 12
+const TILE_RIVER: int = 13
+const TILE_LAKE: int = 14
+
+# --- DATA FIELDS ---
 var altitude: float
 var moisture: float
 var temperature: float
-
-# Discrete Bands (0-4)
-var temp_band: int = 0
-var moisture_band: int = 0
-
-# Output Metadata
 var biome: String
 var tile_id: int
 
-# The Whittaker Matrix Blueprint
-# Rows: Temperature (0=Cold, 4=Hot)
-# Cols: Moisture (0=Arid, 4=Wet)
-const BIOME_MATRIX = [
-	[12, 12, 11, 11, 11], # 0: Cold
-	[8,  9,  9,  10, 10], # 1
-	[8,  9,  5,  10, 13], # 2: Mid (Highland at center)
-	[8,  14, 14, 13, 13], # 3
-	[8,  14, 14, 13, 13]  # 4: Hot
+# --- WHITTAKER MATRIX (5x5) ---
+# Rows (Temp): 0:Polar, 1:Cold, 2:Temperate, 3:Warm, 4:Tropical
+# Cols (Moist): 0:Arid, 1:Dry, 2:Sub-Humid, 3:Humid, 4:Wet
+const WHITTAKER_LAND = [
+	[TILE_SNOW,   TILE_SNOW,      TILE_TUNDRA,    TILE_TUNDRA,    TILE_TUNDRA],    # 0: Polar
+	[TILE_DESERT, TILE_GRASSLAND, TILE_GRASSLAND, TILE_FOREST,    TILE_FOREST],    # 1: Cold
+	[TILE_DESERT, TILE_GRASSLAND, TILE_HIGHLAND,  TILE_FOREST,    TILE_FOREST],    # 2: Temperate
+	[TILE_DESERT, TILE_GRASSLAND, TILE_GRASSLAND, TILE_FOREST,    TILE_FOREST],    # 3: Warm
+	[TILE_DESERT, TILE_DESERT,    TILE_GRASSLAND, TILE_FOREST,    TILE_FOREST]     # 4: Tropical
 ]
 
-const BIOME_NAMES = {
-	0: "ocean", 5: "highland", 8: "desert", 9: "grassland", 
-	10: "forest", 11: "tundra", 12: "snow", 13: "rainforest", 14: "savanna"
-}
-
 func classify_biome():
+	# 1. HYDROSPHERE (Water Tiers)
 	if altitude < 0.0:
-		biome = "ocean"
-		tile_id = 0
+		_classify_water()
 		return
+
+	# 2. OROGRAPHY (High Altitude Overrides)
+	if altitude > 0.8:
+		tile_id = TILE_PEAK
+		biome = "peak"
+		return
+	if altitude > 0.6:
+		tile_id = TILE_MOUNTAIN
+		biome = "mountain"
+		return
+
+	# 3. BIOSPHERE (Whittaker Matrix)
+	_classify_land_matrix()
+
+func _classify_water():
+	if altitude < -0.5: 
+		tile_id = TILE_OCEAN_DEEP
+		biome = "ocean_deep"
+	elif altitude < -0.25: 
+		tile_id = TILE_OCEAN_MID
+		biome = "ocean_mid"
+	elif altitude < -0.05: 
+		tile_id = TILE_OCEAN_SHELF
+		biome = "ocean_shelf"
+	else:
+		tile_id = TILE_COAST
+		biome = "coast"
+
+func _classify_land_matrix():
+	# Map 0.0-1.0 to 0-4 indices
+	var t_idx = clampi(int(temperature * 5), 0, 4)
+	var m_idx = clampi(int(pow(moisture, 1.2) * 5), 0, 4) # Applying your aridity bias
 	
-	# Clamp bands to valid matrix indices
-	temp_band = clampi(int(temperature * 5), 0, 4)
-	moisture_band = clampi(int(pow(moisture, 1.2) * 5), 0, 4) # Bias toward aridity
+	tile_id = WHITTAKER_LAND[t_idx][m_idx]
 	
-	tile_id = BIOME_MATRIX[temp_band][moisture_band]
-	biome = BIOME_NAMES.get(tile_id, "unknown")
+	# Semantic Naming
+	match tile_id:
+		TILE_SNOW: biome = "snow"
+		TILE_TUNDRA: biome = "tundra"
+		TILE_DESERT: biome = "desert"
+		TILE_GRASSLAND: biome = "grassland"
+		TILE_FOREST: biome = "forest"
+		TILE_HIGHLAND: biome = "highland"
+		_: biome = "land"
