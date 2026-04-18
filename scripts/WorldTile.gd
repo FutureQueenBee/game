@@ -23,6 +23,12 @@ var moisture: float
 var temperature: float
 var biome: String
 var tile_id: int
+const POLE_THRESHOLD: float = 0.25
+
+# --- HYDRAULIC DATA ---
+var flow_accumulation: float = 0.0
+var flow_direction: Vector2 = Vector2.ZERO
+
 
 # --- WHITTAKER MATRIX (5x5) ---
 # Rows (Temp): 0:Polar, 1:Cold, 2:Temperate, 3:Warm, 4:Tropical
@@ -55,6 +61,13 @@ func classify_biome():
 	_classify_land_matrix()
 
 func _classify_water():
+	# Polar Override
+	var world_height = 2048.0 # Default fallback
+	# We check latitude via WorldTile's position in future, but for now we rely on the override
+	if biome == "ice_ocean":
+		tile_id = 12 # TILE_SNOW/ICE
+		return
+
 	if altitude < -0.5: 
 		tile_id = TILE_OCEAN_DEEP
 		biome = "ocean_deep"

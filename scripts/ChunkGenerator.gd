@@ -44,7 +44,12 @@ func generate_chunk(cx: int, cy: int) -> Array:
 			# Latitude Temperature Gradient
 			
 			# 1. Latitude factor (0 poles, 1 equator)
+			# 1. Latitude factor
 			var lat_factor = 1.0 - abs((float(wy) / world_height) * 2.0 - 1.0)
+			
+			# Polar Override: Force ice_ocean if at extreme latitudes and altitude < 0
+			var is_polar = lat_factor < 0.15 # Extreme poles
+
 			
 			# 2. Temperature: 60% Latitude, 40% Noise
 			var temp_final = clamp((lat_factor * 0.4) + ((temp_raw * 0.5 + 0.5) * 0.6), 0.0, 1.0)
