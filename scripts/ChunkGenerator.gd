@@ -37,7 +37,12 @@ func generate_chunk(cx: int, cy: int) -> Array:
 			var sample_x = cos(angle) * radius
 			var sample_z = sin(angle) * radius
 
-			var alt = noise_alt.get_noise_3d(sample_x, wy, sample_z) * 1.2
+			
+			# Blend Macro (Skeleton) with Micro (Detail)
+			var macro_alt = world_manager.get_macro_altitude(wx, wy)
+			var micro_alt = noise_alt.get_noise_3d(sample_x, wy, sample_z)
+			var alt = (macro_alt * 0.8) + (micro_alt * 0.4) # Preserve basin structure
+
 			var moist_raw = noise_moist.get_noise_3d(sample_x, wy, sample_z)
 			var temp_raw = noise_temp.get_noise_3d(sample_x, wy, sample_z)
 
